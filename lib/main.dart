@@ -99,7 +99,11 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(
           widget.title,
-          style: TextStyle(color: Color(0xFFEFE9D5)),
+          style: TextStyle(
+            color: Color(0xFFEFE9D5),
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
       body: Center(
