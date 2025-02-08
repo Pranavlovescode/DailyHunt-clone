@@ -1,5 +1,6 @@
-// main.dart
 import 'package:flutter/material.dart';
+import 'package:dailyhunt/login.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,12 +12,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'The Daily Globe',
+      title: "The Daily Globe",
+      color: Color(0xFFE1FFBB),
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xFF0A2533),
+        scaffoldBackgroundColor: const Color(0xFF001A6E),
+        // textTheme: const TextTheme(
+        //   bodyLarge: TextStyle(color: Color(0xFFEFE9D5)),
+        //   bodyMedium: TextStyle(color: Color(0xFFEFE9D5)),
+        //   titleLarge: TextStyle(color: Color(0xFFEFE9D5)),
+        // ),
+        // textTheme: const TextTheme(
+        //   titleLarge:TextStyle(
+        //     color: Color(0xFFEFE9D5)
+        //   )
+        // )
       ),
       home: const OnboardingFlow(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -35,17 +48,66 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentPage = index;
-          });
-        },
-        children: const [
-          SplashScreen(),
-          TrackingScreen(),
-          NotificationScreen(),
+      body: Column(
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              children: const [
+                SplashScreen(),
+                TrackingScreen(),
+                NotificationScreen(),
+              ],
+            ),
+          ),
+          // Page Navigation Buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (_currentPage > 0)
+                  TextButton(
+                    onPressed: () {
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: const Text(
+                      "Back",
+                      style: TextStyle(color: Color(0xFFE1FFBB)),
+                    ),
+                  ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_currentPage < 2) {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    } else {
+                      // Navigate to login screen
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Login()),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Color(0xFF001A6E),
+                    backgroundColor: Color(0xFF009990),
+                  ),
+                  child: Text(_currentPage == 2 ? "Get Started" : "Next"),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -61,7 +123,7 @@ class SplashScreen extends StatelessWidget {
       child: Text(
         'THE DAILY GLOBE',
         style: TextStyle(
-          color: Colors.white,
+          color: Color(0xFFE1FFBB),
           fontSize: 32,
           fontWeight: FontWeight.bold,
         ),
@@ -85,7 +147,7 @@ class TrackingScreen extends StatelessWidget {
               'Welcome to\nThe Daily Globe!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
+                color: Color(0xFFE1FFBB),
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -128,18 +190,20 @@ class TrackingScreen extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF006B81),
+                        backgroundColor: const Color(0xFF074799),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                       child: const Text(
-                          'Personalize My Ads',
+                        'Personalize My Ads',
                         style: TextStyle(
-                          color: Colors.white
+                          color: Color(0xFFE1FFBB),
                         ),
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        print('No Thanks');
+                      },
                       child: const Text(
                         'No Thanks',
                         style: TextStyle(color: Colors.black54),
@@ -159,6 +223,34 @@ class TrackingScreen extends StatelessWidget {
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
 
+  Future<void> requestNotificationPermission(BuildContext context) async {
+    var status = await Permission.notification.request();
+
+    if (status.isGranted) {
+      // Show success message
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notification permission granted!')),
+      );
+    } else if (status.isDenied) {
+      // Show warning message
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notification permission denied!')),
+      );
+    } else if (status.isPermanentlyDenied) {
+      // Open app settings if permanently denied
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Notification permission permanently denied. Enable from settings.'),
+        ),
+      );
+      await openAppSettings();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -171,7 +263,7 @@ class NotificationScreen extends StatelessWidget {
               'Welcome to\nThe Daily Globe!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
+                color: Color(0xFFE1FFBB),
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -212,15 +304,15 @@ class NotificationScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: ()=> requestNotificationPermission(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF006B81),
+                        backgroundColor: const Color(0xFF074799),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                       child: const Text(
                         'Subscribe to Notifications Now',
                         style: TextStyle(
-                          color: Colors.white
+                          color: Color(0xFFE1FFBB),
                         ),
                       ),
                     ),
