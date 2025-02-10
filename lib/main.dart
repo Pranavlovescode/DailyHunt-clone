@@ -13,10 +13,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "The Daily Globe",
-      color: Color(0xFFE1FFBB),
+      color: Color(0xFF001A6E),
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xFF001A6E),
+        scaffoldBackgroundColor: const Color(0xFFE1FFBB),
         // textTheme: const TextTheme(
         //   bodyLarge: TextStyle(color: Color(0xFFEFE9D5)),
         //   bodyMedium: TextStyle(color: Color(0xFFEFE9D5)),
@@ -81,7 +81,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     },
                     child: const Text(
                       "Back",
-                      style: TextStyle(color: Color(0xFFE1FFBB)),
+                      style: TextStyle(color: Color(0xFF001A6E)),
                     ),
                   ),
                 ElevatedButton(
@@ -123,7 +123,7 @@ class SplashScreen extends StatelessWidget {
       child: Text(
         'THE DAILY GLOBE',
         style: TextStyle(
-          color: Color(0xFFE1FFBB),
+          color: Color(0xFF001A6E),
           fontSize: 32,
           fontWeight: FontWeight.bold,
         ),
@@ -147,7 +147,7 @@ class TrackingScreen extends StatelessWidget {
               'Welcome to\nThe Daily Globe!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFFE1FFBB),
+                color: Color(0xFF001A6E),
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -157,12 +157,17 @@ class TrackingScreen extends StatelessWidget {
               'Please set your preferences to\nget the app up and running.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white70,
+                color: Color(0xFF001A6E),
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 24),
             Card(
+              color: const Color(0xFFB8E8E0),
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -263,7 +268,7 @@ class NotificationScreen extends StatelessWidget {
               'Welcome to\nThe Daily Globe!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFFE1FFBB),
+                color: Color(0xFF001A6E),
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -273,12 +278,17 @@ class NotificationScreen extends StatelessWidget {
               'Please set your preferences to\nget the app up and running.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white70,
+                color: Color(0xFF001A6E),
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 24),
             Card(
+              color: const Color(0xFFB8E8E0),
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -304,7 +314,7 @@ class NotificationScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: ()=> requestNotificationPermission(context),
+                      onPressed: () => requestNotificationPermission(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF074799),
                         padding: const EdgeInsets.symmetric(vertical: 12),
