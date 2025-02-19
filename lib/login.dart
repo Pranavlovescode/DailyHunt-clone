@@ -39,7 +39,7 @@ class _LoginState extends State<Login> {
               onPressed: () {
                 debugPrint("Skipped");
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return const Home();
+                  return Home();
                 }));
               },
               child: Row(
