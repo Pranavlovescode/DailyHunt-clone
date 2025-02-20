@@ -1,3 +1,4 @@
+import 'package:dailyhunt/languages.dart';
 import 'package:flutter/material.dart';
 import 'home.dart';
 
@@ -39,7 +40,7 @@ class _LoginState extends State<Login> {
               onPressed: () {
                 debugPrint("Skipped");
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return Home();
+                  return Languages();
                 }));
               },
               child: Row(

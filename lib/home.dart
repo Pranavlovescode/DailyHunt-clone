@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
-  Home({super.key});
+  String lang;
+  Home({super.key,required this.lang});
 
   @override
   State<Home> createState() => _HomeState();
@@ -15,13 +16,13 @@ class _HomeState extends State<Home> {
   NewsApi newsApi = NewsApi();
 
   Future<void> getTopNews() async {
-    List<NewsModel> fetchedNews = await newsApi.getTopHeadlines();
+    List<NewsModel> fetchedNews = await newsApi.getTopHeadlines(widget.lang);
     setState(() {
       newsList = fetchedNews;
     });
   }
 
-  int _selectedIndex = 0; // Track selected tab
+  int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -161,7 +162,6 @@ class _HomeState extends State<Home> {
               BottomNavigationBarItem(
                 icon: Icon(Icons.home, size: 28),
                 label: 'Home',
-
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.search, size: 28),
