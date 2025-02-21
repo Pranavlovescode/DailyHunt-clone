@@ -1,11 +1,12 @@
+import 'package:dailyhunt/NewsPageDetail.dart';
 import 'package:dailyhunt/api/news_api.dart';
 import 'package:dailyhunt/model/news_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
-  String lang;
-  Home({super.key,required this.lang});
+  final String lang;
+  Home({super.key, required this.lang});
 
   @override
   State<Home> createState() => _HomeState();
@@ -38,8 +39,7 @@ class _HomeState extends State<Home> {
 
   String formatDate(DateTime date) {
     String day = DateFormat('d').format(date);
-    String suffix =
-        getDaySuffix(int.parse(day)); // Get ordinal suffix (st, nd, rd, th)
+    String suffix = getDaySuffix(int.parse(day));
     String formattedDate = "$day$suffix ${DateFormat('MMM yyyy').format(date)}";
     return formattedDate;
   }
@@ -66,16 +66,13 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         backgroundColor: Colors.indigo[900],
         foregroundColor: Colors.green[200],
-        title: Text("The Daily Globe"),
+        title: const Text("The Daily Globe"),
         titleTextStyle: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 20,
+          fontFamily: "CustomPoppins"
         ),
         elevation: 0,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.menu, color: Colors.white),
-        //   onPressed: () {},
-        // ),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
@@ -85,29 +82,36 @@ class _HomeState extends State<Home> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Welcome back, Tyler!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 5),
-            const Text(
-              'Discover a world of news that matters to you',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            const SectionHeader(title: 'Trending news'),
-            SizedBox(
-              height: MediaQuery.of(context).size.height *
-                  0.35, // Set dynamic height for the NewsCard
-              child: newsList.isEmpty
-                  ? const Center(
-                      child:
-                          CircularProgressIndicator()) // Show loader while fetching
-                  : ListView.builder(
+        padding: const EdgeInsets.all(5.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Welcome back, Tyler!',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,fontFamily: "CustomPoppins"),
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Discover a world of news that matters to you',
+                        style: TextStyle(fontSize: 16, color: Colors.grey,fontFamily: "CustomPoppins"),
+                      ),
+                      const SizedBox(height: 20),
+                      const SectionHeader(title: 'Trending news'),
+                    ],
+                  ),),
+
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.35,
+                    child: newsList.isEmpty
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: newsList.length,
                       itemBuilder: (context, index) {
@@ -118,14 +122,18 @@ class _HomeState extends State<Home> {
                           image: newsList[index].image,
                           date: DateFormat('d MMM yyyy')
                               .format(newsList[index].publishedAt),
+                          content:newsList[index].content
                         );
                       },
                     ),
-            ),
-            const SizedBox(height: 20),
-            const SectionHeader(title: 'Recommendation'),
-            const RecommendationCard(),
-          ],
+                  ),
+                  const SizedBox(height: 20),
+                  const SectionHeader(title: 'Recommendation'),
+                  const RecommendationCard(),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Container(
@@ -150,14 +158,12 @@ class _HomeState extends State<Home> {
           ),
           child: BottomNavigationBar(
             backgroundColor: Colors.indigo[900],
-            currentIndex: _selectedIndex, // Track active tab
-            onTap: _onItemTapped, // Handle tab selection
-            selectedItemColor: Colors.green[200], // Highlight selected tab
-            unselectedItemColor:
-                Colors.white70, // Less bright for inactive tabs
-            showUnselectedLabels: false, // Hide unselected labels
-            type: BottomNavigationBarType.fixed, // Keeps icons in place
-            // elevation: 10,
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            selectedItemColor: Colors.green[200],
+            unselectedItemColor: Colors.white70,
+            showUnselectedLabels: false,
+            type: BottomNavigationBarType.fixed,
             items: const [
               BottomNavigationBarItem(
                 icon: Icon(Icons.home, size: 28),
@@ -179,23 +185,18 @@ class _HomeState extends State<Home> {
   }
 }
 
-class SectionHeader extends StatefulWidget {
+class SectionHeader extends StatelessWidget {
   final String title;
   const SectionHeader({super.key, required this.title});
 
-  @override
-  State<SectionHeader> createState() => _SectionHeaderState();
-}
-
-class _SectionHeaderState extends State<SectionHeader> {
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          widget.title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,fontFamily: "CustomPoppins"),
         ),
         TextButton(
           onPressed: () {},
@@ -207,69 +208,73 @@ class _SectionHeaderState extends State<SectionHeader> {
 }
 
 class NewsCard extends StatelessWidget {
-  final String category, title, source, date, image;
+  final String category, title, source, date, image,content;
   const NewsCard(
       {super.key,
-      required this.category,
-      required this.title,
-      required this.source,
-      required this.image,
-      required this.date});
+        required this.category,
+        required this.title,
+        required this.source,
+        required this.image,
+        required this.date,
+        required this.content});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 250,
-      margin: const EdgeInsets.only(right: 10),
-      decoration: BoxDecoration(
-        color: Color(0xFF009990),
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 100,
-            decoration: BoxDecoration(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(10)),
-              image: DecorationImage(
-                image: NetworkImage(image),
-                fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: (){
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>NewsDetailPage(title: title, source: source, publishedAt: date, image: image, content:content )));
+      },
+      child: Container(
+        width: 250,
+        margin: const EdgeInsets.only(right: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF009990),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 100,
+              decoration: BoxDecoration(
+                borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(10)),
+                image: DecorationImage(
+                  image: NetworkImage(image),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.indigo[900],
-                  ),
-                  height: 20,
-                  width: 100,
-                  alignment: Alignment.center,
-                  child: Text(
-                    category,
-                    style: const TextStyle(
-                      color: Colors.white,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.indigo[900],
+                    ),
+                    height: 20,
+                    width: 100,
+                    alignment: Alignment.center,
+                    child: Text(
+                      category,
+                      style: const TextStyle(color: Colors.white,fontFamily: "CustomPoppins"),
+
                     ),
                   ),
-                ),
-                // Chip(label: Text(widget.category, style: const TextStyle(color: Colors.white)), backgroundColor: Colors.blue),
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
-                Text('$source • $date', style: TextStyle(color: Colors.white)),
-              ],
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold,fontFamily: "CustomPoppins")),
+                  const SizedBox(height: 5),
+                  Text('$source • $date', style: const TextStyle(color: Colors.white)),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -326,6 +331,7 @@ class _RecommendationCardState extends State<RecommendationCard> {
               "Business",
               style: const TextStyle(
                 color: Colors.white,
+                fontFamily: "CustomPoppins"
               ),
             ),
           ),

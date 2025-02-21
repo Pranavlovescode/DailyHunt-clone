@@ -81,7 +81,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     },
                     child: const Text(
                       "Back",
-                      style: TextStyle(color: Color(0xFF001A6E)),
+                      style: TextStyle(color: Color(0xFF001A6E),fontFamily: "CustomPoppins"),
                     ),
                   ),
                 ElevatedButton(
@@ -126,6 +126,7 @@ class SplashScreen extends StatelessWidget {
           color: Color(0xFF001A6E),
           fontSize: 32,
           fontWeight: FontWeight.bold,
+          fontFamily: "CustomPoppins"
         ),
       ),
     );
@@ -150,6 +151,7 @@ class TrackingScreen extends StatelessWidget {
                 color: Color(0xFF001A6E),
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                fontFamily: "CustomPoppins"
               ),
             ),
             const SizedBox(height: 8),
@@ -180,6 +182,7 @@ class TrackingScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
+                        fontFamily: "CustomPoppins"
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -189,6 +192,7 @@ class TrackingScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.black54,
+                        fontFamily: "CustomPoppins"
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -202,6 +206,7 @@ class TrackingScreen extends StatelessWidget {
                         'Personalize My Ads',
                         style: TextStyle(
                           color: Color(0xFFE1FFBB),
+                          fontFamily: "CustomPoppins",
                         ),
                       ),
                     ),
@@ -271,6 +276,7 @@ class NotificationScreen extends StatelessWidget {
                 color: Color(0xFF001A6E),
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                fontFamily: "CustomPoppins"
               ),
             ),
             const SizedBox(height: 8),
@@ -280,6 +286,7 @@ class NotificationScreen extends StatelessWidget {
               style: TextStyle(
                 color: Color(0xFF001A6E),
                 fontSize: 16,
+                fontFamily: "CustomPoppins"
               ),
             ),
             const SizedBox(height: 24),
@@ -301,6 +308,7 @@ class NotificationScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
+                        fontFamily: "CustomPoppins"
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -310,6 +318,7 @@ class NotificationScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.black54,
+                        fontFamily: "CustomPoppins"
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -323,6 +332,7 @@ class NotificationScreen extends StatelessWidget {
                         'Subscribe to Notifications Now',
                         style: TextStyle(
                           color: Color(0xFFE1FFBB),
+                          fontFamily: "CustomPoppins"
                         ),
                       ),
                     ),
@@ -330,7 +340,7 @@ class NotificationScreen extends StatelessWidget {
                       onPressed: () {},
                       child: const Text(
                         'No Thanks',
-                        style: TextStyle(color: Colors.black54),
+                        style: TextStyle(color: Colors.black54,fontFamily: "CustomPoppins"),
                       ),
                     ),
                   ],

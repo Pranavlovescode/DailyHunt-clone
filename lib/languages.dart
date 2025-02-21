@@ -44,6 +44,7 @@ class _LanguagesState extends State<Languages> {
                 color: Color(0xFF001A6E),
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                fontFamily: "CustomPoppins"
               ),
             ),
             const SizedBox(height: 10),

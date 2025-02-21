@@ -48,7 +48,7 @@ class _LoginState extends State<Login> {
                 children: const [
                   Text(
                     "Skip",
-                    style: TextStyle(fontSize: 20, color: Color(0xFF001A6E)),
+                    style: TextStyle(fontSize: 20, color: Color(0xFF001A6E),fontFamily: "CustomPoppins"),
                   ),
                   SizedBox(width: 5),
                   Icon(Icons.arrow_forward, size: 30, color: Color(0xFF001A6E)),
@@ -79,6 +79,7 @@ class _LoginState extends State<Login> {
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF001A6E),
+                      fontFamily: "CustomPoppins"
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -133,6 +134,7 @@ class _LoginState extends State<Login> {
                       style: TextStyle(
                         fontSize: 16,
                         color: Color(0xFFE1FFBB), // Light Greenish-Yellow
+                        fontFamily: "CustomPoppins"
                       ),
                     ),
                   ),
@@ -145,7 +147,7 @@ class _LoginState extends State<Login> {
                     },
                     child: const Text(
                       "Forgot Password?",
-                      style: TextStyle(color: Colors.black54),
+                      style: TextStyle(color: Colors.black54,fontFamily: "CustomPoppins"),
                     ),
                   ),
                   TextButton(
@@ -154,7 +156,7 @@ class _LoginState extends State<Login> {
                     },
                     child: const Text(
                       "Don't have an account? Sign up",
-                      style: TextStyle(color: Colors.black54),
+                      style: TextStyle(color: Colors.black54,fontFamily: "CustomPoppins"),
                     ),
                   ),
                 ],
