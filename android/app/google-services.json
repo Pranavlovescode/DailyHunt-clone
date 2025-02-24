@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "246713456730",
+    "project_id": "dailyhunt-30290",
+    "storage_bucket": "dailyhunt-30290.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246713456730:android:b351717556972c1b9a2063",
+        "android_client_info": {
+          "package_name": "com.example.dailyhunt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpVLoaXlXO4fMcQFCIj26smZp49IPpVow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

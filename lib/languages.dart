@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dailyhunt/home.dart';
+import 'package:dailyhunt/services/user_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Languages extends StatefulWidget {
@@ -24,6 +27,25 @@ class _LanguagesState extends State<Languages> {
 
   // Store selected language code
   String? _selectedLanguageCode;
+
+  String name = "";
+  String email = "";
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  firebaseUser() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    final DocumentSnapshot doc = await firestore.collection("users").doc(user!.uid).get();
+    setState(() {
+      name = doc['name'];
+      email = doc['email'];
+    });
+    debugPrint("Name: $name, Email: $email");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    firebaseUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +100,8 @@ class _LanguagesState extends State<Languages> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Selected Language: $_selectedLanguageCode")),
             );
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
+            UserPreferences.saveUserInfo(name, email, languages.keys.elementAt(languages.values.toList().indexOf(_selectedLanguageCode!)));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
               return Home(lang: _selectedLanguageCode!);
             }));
           }

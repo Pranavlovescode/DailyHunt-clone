@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dailyhunt/NewsPageDetail.dart';
 import 'package:dailyhunt/api/news_api.dart';
 import 'package:dailyhunt/model/news_model.dart';
+import 'package:dailyhunt/profile_page.dart';
+import 'package:dailyhunt/search_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -13,7 +17,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
   List<NewsModel> newsList = [];
+
   NewsApi newsApi = NewsApi();
 
   Future<void> getTopNews() async {
@@ -23,41 +29,25 @@ class _HomeState extends State<Home> {
     });
   }
 
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     getTopNews();
   }
 
-  String formatDate(DateTime date) {
-    String day = DateFormat('d').format(date);
-    String suffix = getDaySuffix(int.parse(day));
-    String formattedDate = "$day$suffix ${DateFormat('MMM yyyy').format(date)}";
-    return formattedDate;
-  }
+  int _selectedIndex = 0;
 
-  String getDaySuffix(int day) {
-    if (day >= 11 && day <= 13) {
-      return "th";
-    }
-    switch (day % 10) {
-      case 1:
-        return "st";
-      case 2:
-        return "nd";
-      case 3:
-        return "rd";
-      default:
-        return "th";
-    }
+  // List of screens for each tab
+  late final List<Widget> _screens = [
+    HomeScreen(lang: widget.lang), // Home Page
+    SearchScreen(),
+    ProfileScreen(), // Profile Page
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
@@ -68,10 +58,9 @@ class _HomeState extends State<Home> {
         foregroundColor: Colors.green[200],
         title: const Text("The Daily Globe"),
         titleTextStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-          fontFamily: "CustomPoppins"
-        ),
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            fontFamily: "CustomPoppins"),
         elevation: 0,
         automaticallyImplyLeading: false,
         actions: [
@@ -81,61 +70,7 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Welcome back, Tyler!',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,fontFamily: "CustomPoppins"),
-                      ),
-                      const SizedBox(height: 5),
-                      const Text(
-                        'Discover a world of news that matters to you',
-                        style: TextStyle(fontSize: 16, color: Colors.grey,fontFamily: "CustomPoppins"),
-                      ),
-                      const SizedBox(height: 20),
-                      const SectionHeader(title: 'Trending news'),
-                    ],
-                  ),),
-
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.35,
-                    child: newsList.isEmpty
-                        ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: newsList.length,
-                      itemBuilder: (context, index) {
-                        return NewsCard(
-                          category: 'Business',
-                          title: newsList[index].title,
-                          source: newsList[index].source,
-                          image: newsList[index].image,
-                          date: DateFormat('d MMM yyyy')
-                              .format(newsList[index].publishedAt),
-                          content:newsList[index].content
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const SectionHeader(title: 'Recommendation'),
-                  const RecommendationCard(),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+      body:_screens[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.indigo[900],
@@ -196,7 +131,10 @@ class SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,fontFamily: "CustomPoppins"),
+          style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: "CustomPoppins"),
         ),
         TextButton(
           onPressed: () {},
@@ -208,21 +146,29 @@ class SectionHeader extends StatelessWidget {
 }
 
 class NewsCard extends StatelessWidget {
-  final String category, title, source, date, image,content;
+  final String category, title, source, date, image, content;
   const NewsCard(
       {super.key,
-        required this.category,
-        required this.title,
-        required this.source,
-        required this.image,
-        required this.date,
-        required this.content});
+      required this.category,
+      required this.title,
+      required this.source,
+      required this.image,
+      required this.date,
+      required this.content});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>NewsDetailPage(title: title, source: source, publishedAt: date, image: image, content:content )));
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => NewsDetailPage(
+                    title: title,
+                    source: source,
+                    publishedAt: date,
+                    image: image,
+                    content: content)));
       },
       child: Container(
         width: 250,
@@ -239,7 +185,7 @@ class NewsCard extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(10)),
+                    const BorderRadius.vertical(top: Radius.circular(10)),
                 image: DecorationImage(
                   image: NetworkImage(image),
                   fit: BoxFit.cover,
@@ -261,15 +207,18 @@ class NewsCard extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       category,
-                      style: const TextStyle(color: Colors.white,fontFamily: "CustomPoppins"),
-
+                      style: const TextStyle(
+                          color: Colors.white, fontFamily: "CustomPoppins"),
                     ),
                   ),
                   Text(title,
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold,fontFamily: "CustomPoppins")),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "CustomPoppins")),
                   const SizedBox(height: 5),
-                  Text('$source • $date', style: const TextStyle(color: Colors.white)),
+                  Text('$source • $date',
+                      style: const TextStyle(color: Colors.white)),
                 ],
               ),
             ),
@@ -330,12 +279,156 @@ class _RecommendationCardState extends State<RecommendationCard> {
             child: Text(
               "Business",
               style: const TextStyle(
-                color: Colors.white,
-                fontFamily: "CustomPoppins"
-              ),
+                  color: Colors.white, fontFamily: "CustomPoppins"),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+class HomeScreen extends StatefulWidget {
+  final String lang;
+  HomeScreen({super.key,required this.lang});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String formatDate(DateTime date) {
+    String day = DateFormat('d').format(date);
+    String suffix = getDaySuffix(int.parse(day));
+    String formattedDate = "$day$suffix ${DateFormat('MMM yyyy').format(date)}";
+    return formattedDate;
+  }
+
+  String getDaySuffix(int day) {
+    if (day >= 11 && day <= 13) {
+      return "th";
+    }
+    switch (day % 10) {
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
+    }
+  }
+
+  final User? userCredential = FirebaseAuth.instance.currentUser;
+
+  List<NewsModel> newsList = [];
+
+  NewsApi newsApi = NewsApi();
+
+  Future<void> getTopNews() async {
+    List<NewsModel> fetchedNews = await newsApi.getTopHeadlines(widget.lang);
+    setState(() {
+      newsList = fetchedNews;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getTopNews();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Text(
+                      //   'Welcome back, ${FirebaseFirestore.instance.collection("users").doc(userCredential!.uid).get() ?? 'Guest'} !',
+                      //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,fontFamily: "CustomPoppins"),
+                      // ),
+                      FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(userCredential!.uid)
+                            .get(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          }
+                          if (!snapshot.hasData || !snapshot.data!.exists) {
+                            return const Text(
+                              'Welcome back, Guest!',
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: "CustomPoppins"),
+                            );
+                          }
+                          final data =
+                          snapshot.data!.data() as Map<String, dynamic>?;
+                          final userName = data?['name'] ?? 'Guest';
+                          return Text(
+                            'Welcome back, $userName !',
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: "CustomPoppins"),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Discover a world of news that matters to you',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                            fontFamily: "CustomPoppins"),
+                      ),
+                      const SizedBox(height: 20),
+                      const SectionHeader(title: 'Trending news'),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.35,
+                  child: newsList.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: newsList.length,
+                    itemBuilder: (context, index) {
+                      return NewsCard(
+                          category: 'Business',
+                          title: newsList[index].title,
+                          source: newsList[index].source,
+                          image: newsList[index].image,
+                          date: DateFormat('d MMM yyyy')
+                              .format(newsList[index].publishedAt),
+                          content: newsList[index].content);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const SectionHeader(title: 'Recommendation'),
+                const RecommendationCard(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

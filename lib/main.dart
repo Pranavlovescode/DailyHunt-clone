@@ -1,13 +1,43 @@
+import 'package:dailyhunt/firebase_options.dart';
+import 'package:dailyhunt/home.dart';
+import 'package:dailyhunt/languages.dart';
+import 'package:dailyhunt/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:dailyhunt/login.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  bool isLoggedIn = (await AuthService.isUserLoggedIn()) ?? false;
+  bool showOnboarding = (await shouldShowOnboarding()) ?? true;
+
+  print("isLoggedIn: $isLoggedIn, showOnboarding: $showOnboarding");
+  try {
+    // await Firebase.initializeApp(
+    //   options: FirebaseOptions(
+    //     apiKey: 'AIzaSyBpVLoaXlXO4fMcQFCIj26smZp49IPpVow',
+    //     appId: '1:246713456730:android:b351717556972c1b9a2063',
+    //     messagingSenderId: '246713456730',
+    //     projectId: 'dailyhunt-30290',
+    //     storageBucket: 'dailyhunt-30290.firebasestorage.app',
+    //   )
+    // );
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform
+    );
+    print("✅ Firebase connected successfully!");
+  } catch (e) {
+    print("❌ Firebase initialization failed: $e");
+  }
+  runApp(MyApp(isLoggedIn: isLoggedIn, showOnboarding: showOnboarding));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool showOnboarding;
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn,required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +58,9 @@ class MyApp extends StatelessWidget {
         //   )
         // )
       ),
-      home: const OnboardingFlow(),
+      home: isLoggedIn
+        ? Home(lang: "en")
+        : (showOnboarding ? OnboardingFlow() : Login()),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -81,11 +113,13 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     },
                     child: const Text(
                       "Back",
-                      style: TextStyle(color: Color(0xFF001A6E),fontFamily: "CustomPoppins"),
+                      style: TextStyle(
+                          color: Color(0xFF001A6E),
+                          fontFamily: "CustomPoppins"),
                     ),
                   ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_currentPage < 2) {
                       _pageController.nextPage(
                         duration: const Duration(milliseconds: 300),
@@ -93,6 +127,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                       );
                     } else {
                       // Navigate to login screen
+                      await completeOnboarding();
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const Login()),
@@ -123,11 +158,10 @@ class SplashScreen extends StatelessWidget {
       child: Text(
         'THE DAILY GLOBE',
         style: TextStyle(
-          color: Color(0xFF001A6E),
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          fontFamily: "CustomPoppins"
-        ),
+            color: Color(0xFF001A6E),
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            fontFamily: "CustomPoppins"),
       ),
     );
   }
@@ -148,11 +182,10 @@ class TrackingScreen extends StatelessWidget {
               'Welcome to\nThe Daily Globe!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF001A6E),
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                fontFamily: "CustomPoppins"
-              ),
+                  color: Color(0xFF001A6E),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "CustomPoppins"),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -180,20 +213,18 @@ class TrackingScreen extends StatelessWidget {
                       'This publication is\nad-supported.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: "CustomPoppins"
-                      ),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: "CustomPoppins"),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       'Enable ad tracking to see personalized advertising that is relevant to your interests.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
-                        fontFamily: "CustomPoppins"
-                      ),
+                          fontSize: 14,
+                          color: Colors.black54,
+                          fontFamily: "CustomPoppins"),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -273,21 +304,19 @@ class NotificationScreen extends StatelessWidget {
               'Welcome to\nThe Daily Globe!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF001A6E),
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                fontFamily: "CustomPoppins"
-              ),
+                  color: Color(0xFF001A6E),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "CustomPoppins"),
             ),
             const SizedBox(height: 8),
             const Text(
               'Please set your preferences to\nget the app up and running.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF001A6E),
-                fontSize: 16,
-                fontFamily: "CustomPoppins"
-              ),
+                  color: Color(0xFF001A6E),
+                  fontSize: 16,
+                  fontFamily: "CustomPoppins"),
             ),
             const SizedBox(height: 24),
             Card(
@@ -306,20 +335,18 @@ class NotificationScreen extends StatelessWidget {
                       "Don't miss our\ntop stories!",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: "CustomPoppins"
-                      ),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: "CustomPoppins"),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       'Subscribe to our notifications to stay up to date on the latest breaking news.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
-                        fontFamily: "CustomPoppins"
-                      ),
+                          fontSize: 14,
+                          color: Colors.black54,
+                          fontFamily: "CustomPoppins"),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -331,16 +358,16 @@ class NotificationScreen extends StatelessWidget {
                       child: const Text(
                         'Subscribe to Notifications Now',
                         style: TextStyle(
-                          color: Color(0xFFE1FFBB),
-                          fontFamily: "CustomPoppins"
-                        ),
+                            color: Color(0xFFE1FFBB),
+                            fontFamily: "CustomPoppins"),
                       ),
                     ),
                     TextButton(
                       onPressed: () {},
                       child: const Text(
                         'No Thanks',
-                        style: TextStyle(color: Colors.black54,fontFamily: "CustomPoppins"),
+                        style: TextStyle(
+                            color: Colors.black54, fontFamily: "CustomPoppins"),
                       ),
                     ),
                   ],
@@ -352,4 +379,23 @@ class NotificationScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+
+
+Future<bool> isUserLoggedIn() async {
+final prefs = await SharedPreferences.getInstance();
+return prefs.getBool('isLoggedIn') ?? false; // Ensure it never returns null
+}
+
+
+/// Check if onboarding has been completed
+Future<bool> shouldShowOnboarding() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool('showOnboarding') ?? true; // Default to true
+}
+
+Future<void> completeOnboarding() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('showOnboarding', false); // Save preference
 }

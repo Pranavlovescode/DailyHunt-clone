@@ -1,4 +1,6 @@
 import 'package:dailyhunt/languages.dart';
+import 'package:dailyhunt/services/auth_service.dart';
+import 'package:dailyhunt/signup_page.dart';
 import 'package:flutter/material.dart';
 import 'home.dart';
 
@@ -12,6 +14,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final int flag = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +51,10 @@ class _LoginState extends State<Login> {
                 children: const [
                   Text(
                     "Skip",
-                    style: TextStyle(fontSize: 20, color: Color(0xFF001A6E),fontFamily: "CustomPoppins"),
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Color(0xFF001A6E),
+                        fontFamily: "CustomPoppins"),
                   ),
                   SizedBox(width: 5),
                   Icon(Icons.arrow_forward, size: 30, color: Color(0xFF001A6E)),
@@ -76,11 +82,10 @@ class _LoginState extends State<Login> {
                   const Text(
                     "Welcome Back!",
                     style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF001A6E),
-                      fontFamily: "CustomPoppins"
-                    ),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF001A6E),
+                        fontFamily: "CustomPoppins"),
                   ),
                   const SizedBox(height: 10),
                   const Text(
@@ -117,24 +122,35 @@ class _LoginState extends State<Login> {
                   const SizedBox(height: 20),
 
                   // Login Button
-                  ElevatedButton(
-                    onPressed: () {
-                      // TODO: Implement login logic
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF074799), // Deep Blue
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: Colors.blue.shade900,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFFE1FFBB), // Light Greenish-Yellow
-                        fontFamily: "CustomPoppins"
+                        onPressed: () async {
+                          // TODO: Implement login logic
+                          debugPrint("Login");
+                          AuthService().login(
+                              email: emailController.text,
+                              password: passwordController.text,
+                              context: context);
+                          // if ( message ==
+                          //     "login successful") {
+                          //   Navigator.push(context,
+                          //       MaterialPageRoute(builder: (context) {
+                          //     return Languages();
+                          //   }));
+                          // }
+                          // else if(AuthService().login(email: emailController.text, password:passwordController.text , context: context) == "")
+                        },
+                      child: Text(
+                        "Login",
+                        style: TextStyle(fontSize: 16, color:Color(0xFFE1FFBB),fontFamily: "CustomPoppins"),
                       ),
                     ),
                   ),
@@ -147,16 +163,26 @@ class _LoginState extends State<Login> {
                     },
                     child: const Text(
                       "Forgot Password?",
-                      style: TextStyle(color: Colors.black54,fontFamily: "CustomPoppins"),
+                      style: TextStyle(
+                          color: Colors.black54, fontFamily: "CustomPoppins"),
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: Implement Signup Navigation
-                    },
-                    child: const Text(
-                      "Don't have an account? Sign up",
-                      style: TextStyle(color: Colors.black54,fontFamily: "CustomPoppins"),
+                  Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context){
+                          return SignupPage();
+                        }));
+                      },
+                      child: Text(
+                        "Don't have an account? Sign Up",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.blue.shade900,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "CustomPoppins",
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -168,4 +194,3 @@ class _LoginState extends State<Login> {
     );
   }
 }
-
