@@ -1,3 +1,7 @@
+import 'package:dailyhunt/edit_profile_page.dart';
+import 'package:dailyhunt/home.dart';
+import 'package:dailyhunt/languages.dart';
+import 'package:dailyhunt/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,11 +11,13 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String profileImageUrl = "https://i.pravatar.cc/150?img=10"; // Avatar image
-  String name = "Pranav Titambe";
+  String profileImageUrl = "https://i.pravatar.cc/150?img=10";
+  String name = "";
   String email = "";
-  String language = "English";
+  String language = "";
+  bool isLoading = true;
   final List<String> languages = ["English", "Spanish", "French", "Hindi"];
+
   @override
   void initState() {
     super.initState();
@@ -19,53 +25,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      name = prefs.getString('userName') ?? "Guest";
-      email = prefs.getString('userEmail') ?? "No email";
-      language = prefs.getString('userLanguage') ?? "English";
-    });
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        name = prefs.getString('userName') ?? "Guest";
+        email = prefs.getString('userEmail') ?? "No email";
+        language = prefs.getString('userLanguage') ?? "English";
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      debugPrint("Error loading user info: $e");
+    }
   }
 
   Future<void> _updateLanguage(String newLanguage) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userLanguage', newLanguage);
-    setState(() {
-      language = newLanguage;
-    });
-    Navigator.pop(context);
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userLanguage', newLanguage);
+      setState(() => language = newLanguage);
+      Navigator.pop(context);
+    } catch (e) {
+      debugPrint("Error updating language: $e");
+    }
   }
 
   void _showLanguageSelector() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          padding: EdgeInsets.all(20),
-          height: 250,
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Select Language",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "CustomPoppins",
+                  color: Color(0xFF2C3E50),
+                ),
               ),
-              const SizedBox(height: 15),
-              DropdownButton<String>(
-                value: language,
-                isExpanded: true,
-                items: languages.map((lang) {
-                  return DropdownMenuItem(
-                    value: lang,
-                    child: Text(lang),
-                  );
-                }).toList(),
-                onChanged: (newLang) {
-                  if (newLang != null) {
-                    _updateLanguage(newLang);
-                  }
-                },
-              ),
+              const SizedBox(height: 16),
+              ...languages.map((lang) => ListTile(
+                leading: Icon(
+                  Icons.language,
+                  color: language == lang
+                      ? Theme.of(context).colorScheme.primary
+                      : const Color(0xFF7F8C8D),
+                ),
+                title: Text(
+                  lang,
+                  style: TextStyle(
+                    fontFamily: "CustomPoppins",
+                    color: language == lang
+                        ? Theme.of(context).colorScheme.primary
+                        : const Color(0xFF2C3E50),
+                    fontWeight: language == lang
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+                trailing: language == lang
+                    ? Icon(
+                        Icons.check_circle,
+                        color: Theme.of(context).colorScheme.primary,
+                      )
+                    : null,
+                onTap: () => _updateLanguage(lang),
+              )).toList(),
             ],
           ),
         );
@@ -75,126 +111,234 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy user data (replace with actual data)
-
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: Text("Profile"),
-      //   centerTitle: true,
-      //   backgroundColor: Colors.indigo[900],
-      //   elevation: 0,
-      // ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Profile Picture & Name
-            SizedBox(
-              height: 40,
-            ),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF009990),
-                borderRadius: BorderRadius.all(Radius.circular(30)),
-              ),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage(profileImageUrl),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    email,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 40),
-
-            // User Details Section
-            Card(
-              margin: EdgeInsets.symmetric(horizontal: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              elevation: 5,
-              child: ListTile(
-                leading: Icon(Icons.language, color: Colors.indigo[900]),
-                title: Text("Preferred Language"),
-                subtitle: Text(language),
-                trailing: Icon(Icons.edit, color: Colors.grey[600]),
-                onTap: _showLanguageSelector, // Show dropdown in a modal
-              ),
-            ),
-
-            const SizedBox(height: 40),
-
-            // Buttons Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  // Edit Profile Button
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Navigate to Edit Profile Page
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo[900],
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                    icon: Icon(Icons.edit, color: Colors.white),
-                    label: Text(
-                      "Edit Profile",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // Logout Button
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Perform logout
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[400],
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                    icon: Icon(Icons.logout, color: Colors.white),
-                    label: Text(
-                      "Logout",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF8F9FA), Color(0xFFE8F6FF)],
         ),
       ),
+      child: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                              backgroundImage: NetworkImage(profileImageUrl),
+                            ),
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2C3E50),
+                            fontFamily: "CustomPoppins",
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          email,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF7F8C8D),
+                            fontFamily: "CustomPoppins",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        _buildSettingsTile(
+                          icon: Icons.language,
+                          title: "Language",
+                          subtitle: language,
+                          onTap: ()=>{
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>Languages()))
+                          },
+                        ),
+                        const Divider(height: 1),
+                        _buildSettingsTile(
+                          icon: Icons.notifications_outlined,
+                          title: "Notifications",
+                          subtitle: "Manage notifications",
+                          onTap: () {},
+                        ),
+                        const Divider(height: 1),
+                        _buildSettingsTile(
+                          icon: Icons.privacy_tip_outlined,
+                          title: "Privacy",
+                          subtitle: "Manage privacy settings",
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const EditProfilePage(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                            minimumSize: const Size(double.infinity, 56),
+                          ),
+                          child: const Text(
+                            "Edit Profile",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: "CustomPoppins",
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => AuthService().logout(context),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.error,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(
+                                color: Theme.of(context).colorScheme.error,
+                                width: 1.5,
+                              ),
+                            ),
+                            minimumSize: const Size(double.infinity, 56),
+                          ),
+                          child: const Text(
+                            "Logout",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: "CustomPoppins",
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildSettingsTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.primary,
+          size: 24,
+        ),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF2C3E50),
+          fontFamily: "CustomPoppins",
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFF7F8C8D),
+          fontFamily: "CustomPoppins",
+        ),
+      ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+      onTap: onTap,
     );
   }
 }

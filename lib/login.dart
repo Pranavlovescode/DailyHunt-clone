@@ -21,16 +21,13 @@ class _LoginState extends State<Login> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
-          Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              height: 580, // Adjust the height as needed
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("assets/background.png"),
-                  fit: BoxFit.scaleDown,
-                ),
+          // Background Gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFF8F9FA), Color(0xFFE8F6FF)],
               ),
             ),
           ),
@@ -43,23 +40,61 @@ class _LoginState extends State<Login> {
               onPressed: () {
                 debugPrint("Skipped");
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return Languages();
+                  return const Languages();
                 }));
               },
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF2C3E50),
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: const [
                   Text(
                     "Skip",
                     style: TextStyle(
-                        fontSize: 20,
-                        color: Color(0xFF001A6E),
-                        fontFamily: "CustomPoppins"),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: "CustomPoppins",
+                    ),
                   ),
                   SizedBox(width: 5),
-                  Icon(Icons.arrow_forward, size: 30, color: Color(0xFF001A6E)),
+                  Icon(Icons.arrow_forward, size: 24),
                 ],
               ),
+            ),
+          ),
+
+          // App Logo and Title
+          Positioned(
+            top: 100,
+            left: 0,
+            right: 0,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF3498DB).withOpacity(0.1),
+                  ),
+                  child: const Icon(
+                    Icons.public,
+                    size: 72,
+                    color: Color(0xFF3498DB),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'THE DAILY GLOBE',
+                  style: TextStyle(
+                    color: Color(0xFF2C3E50),
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "CustomPoppins",
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -68,13 +103,20 @@ class _LoginState extends State<Login> {
             alignment: Alignment.bottomCenter,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 231, 255, 246), // Light Teal Card
-                borderRadius: BorderRadius.only(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -82,26 +124,49 @@ class _LoginState extends State<Login> {
                   const Text(
                     "Welcome Back!",
                     style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF001A6E),
-                        fontFamily: "CustomPoppins"),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C3E50),
+                      fontFamily: "CustomPoppins",
+                    ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   const Text(
                     "Login to your account",
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF7F8C8D),
+                      fontFamily: "CustomPoppins",
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 32),
 
                   // Email Field
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
                       labelText: "Email",
-                      prefixIcon: const Icon(Icons.email),
+                      labelStyle: const TextStyle(
+                        color: Color(0xFF7F8C8D),
+                        fontFamily: "CustomPoppins",
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.email,
+                        color: Color(0xFF3498DB),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8F9FA),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(color: Color(0xFF3498DB)),
                       ),
                     ),
                   ),
@@ -113,75 +178,96 @@ class _LoginState extends State<Login> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: "Password",
-                      prefixIcon: const Icon(Icons.lock),
+                      labelStyle: const TextStyle(
+                        color: Color(0xFF7F8C8D),
+                        fontFamily: "CustomPoppins",
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.lock,
+                        color: Color(0xFF3498DB),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8F9FA),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(color: Color(0xFF3498DB)),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   // Login Button
                   SizedBox(
                     width: double.infinity,
+                    height: 55,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: Colors.blue.shade900,
+                        backgroundColor: const Color(0xFF3498DB),
+                        foregroundColor: Colors.white,
+                        elevation: 2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                       ),
-                        onPressed: () async {
-                          // TODO: Implement login logic
-                          debugPrint("Login");
-                          AuthService().login(
-                              email: emailController.text,
-                              password: passwordController.text,
-                              context: context);
-                          // if ( message ==
-                          //     "login successful") {
-                          //   Navigator.push(context,
-                          //       MaterialPageRoute(builder: (context) {
-                          //     return Languages();
-                          //   }));
-                          // }
-                          // else if(AuthService().login(email: emailController.text, password:passwordController.text , context: context) == "")
-                        },
-                      child: Text(
+                      onPressed: () async {
+                        AuthService().login(
+                          email: emailController.text,
+                          password: passwordController.text,
+                          context: context,
+                        );
+                      },
+                      child: const Text(
                         "Login",
-                        style: TextStyle(fontSize: 16, color:Color(0xFFE1FFBB),fontFamily: "CustomPoppins"),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: "CustomPoppins",
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 16),
 
-                  // Forgot Password & Signup Text
+                  // Forgot Password
                   TextButton(
                     onPressed: () {
                       // TODO: Implement Forgot Password Logic
                     },
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF7F8C8D),
+                    ),
                     child: const Text(
                       "Forgot Password?",
                       style: TextStyle(
-                          color: Colors.black54, fontFamily: "CustomPoppins"),
+                        fontFamily: "CustomPoppins",
+                        fontSize: 14,
+                      ),
                     ),
                   ),
-                  Center(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context){
-                          return SignupPage();
-                        }));
-                      },
-                      child: Text(
-                        "Don't have an account? Sign Up",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.blue.shade900,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: "CustomPoppins",
-                        ),
+
+                  // Sign Up Link
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignupPage()),
+                      );
+                    },
+                    child: const Text(
+                      "Don't have an account? Sign Up",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF3498DB),
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "CustomPoppins",
                       ),
                     ),
                   ),

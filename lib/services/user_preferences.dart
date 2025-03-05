@@ -1,3 +1,6 @@
+import 'package:dailyhunt/home.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPreferences {
@@ -17,8 +20,11 @@ class UserPreferences {
     };
   }
 
-  static Future<void> updateLanguage(String language) async {
+  static Future<void> updateLanguage(String language,BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('userLanguage', language);
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return Home(lang: language);
+    }));
   }
 }
