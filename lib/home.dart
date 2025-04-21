@@ -4,6 +4,7 @@ import 'package:dailyhunt/api/news_api.dart';
 import 'package:dailyhunt/model/news_model.dart';
 import 'package:dailyhunt/profile_page.dart';
 import 'package:dailyhunt/search_page.dart';
+import 'package:dailyhunt/widgets/blockchain_test_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -67,6 +68,25 @@ class _HomeState extends State<Home> {
         ),
         automaticallyImplyLeading: false,
         actions: [
+          // Blockchain Test Button
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.link_outlined, color: Colors.white),
+              tooltip: 'Blockchain Test',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BlockchainTestPage()),
+                );
+              },
+            ),
+          ),
+          // Notifications Button
           Container(
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(

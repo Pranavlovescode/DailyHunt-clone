@@ -7,9 +7,20 @@ import 'package:dailyhunt/login.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables (with error handling)
+  try {
+    await dotenv.load(fileName: ".env");
+    print("✅ Environment variables loaded successfully!");
+  } catch (e) {
+    print("⚠️ Failed to load environment variables: $e");
+    // Continue app execution even if .env file is missing
+  }
+  
   bool isLoggedIn = (await AuthService.isUserLoggedIn()) ?? false;
   bool showOnboarding = (await shouldShowOnboarding()) ?? true;
 

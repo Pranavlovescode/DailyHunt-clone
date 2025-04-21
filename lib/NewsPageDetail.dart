@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:dailyhunt/widgets/blockchain_verification_widget.dart';
 
 class NewsDetailPage extends StatelessWidget {
   final String title, source, publishedAt, image, content;
+  final String articleId;
 
   const NewsDetailPage({
     super.key,
@@ -10,6 +12,7 @@ class NewsDetailPage extends StatelessWidget {
     required this.publishedAt,
     required this.image,
     required this.content,
+    this.articleId = '',
   });
 
   @override
@@ -187,6 +190,13 @@ class NewsDetailPage extends StatelessWidget {
                       ],
                     ),
                   ),
+                  
+                  // Blockchain Verification Widget
+                  BlockchainVerificationWidget(
+                    articleContent: content,
+                    articleId: articleId,
+                  ),
+                  
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(

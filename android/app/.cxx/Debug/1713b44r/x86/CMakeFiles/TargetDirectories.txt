@@ -1,0 +1,2 @@
+/home/pranavtitambe/Desktop/DailyHunt-clone/android/app/.cxx/Debug/1713b44r/x86/CMakeFiles/edit_cache.dir
+/home/pranavtitambe/Desktop/DailyHunt-clone/android/app/.cxx/Debug/1713b44r/x86/CMakeFiles/rebuild_cache.dir

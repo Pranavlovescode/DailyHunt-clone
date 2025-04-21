@@ -1,0 +1,2 @@
+/home/pranavtitambe/Desktop/DailyHunt-clone/android/app/.cxx/Debug/1713b44r/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/pranavtitambe/Desktop/DailyHunt-clone/android/app/.cxx/Debug/1713b44r/armeabi-v7a/CMakeFiles/rebuild_cache.dir
