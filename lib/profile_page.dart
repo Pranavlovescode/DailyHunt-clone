@@ -2,6 +2,7 @@ import 'package:dailyhunt/edit_profile_page.dart';
 import 'package:dailyhunt/home.dart';
 import 'package:dailyhunt/languages.dart';
 import 'package:dailyhunt/services/auth_service.dart';
+import 'package:dailyhunt/services/firestore_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,6 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String language = "";
   bool isLoading = true;
   final List<String> languages = ["English", "Spanish", "French", "Hindi"];
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
@@ -25,12 +27,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserInfo() async {
+    setState(() {
+      isLoading = true;
+    });
+    
     try {
+      // Get user profile from FirestoreService
+      final userData = await _firestoreService.getUserProfile();
+      
+      // Get language preference from SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
+      final savedLanguage = prefs.getString('userLanguage') ?? "English";
+      
       setState(() {
-        name = prefs.getString('userName') ?? "Guest";
-        email = prefs.getString('userEmail') ?? "No email";
-        language = prefs.getString('userLanguage') ?? "English";
+        name = userData['name'] ?? "Guest";
+        email = userData['email'] ?? "No email";
+        language = savedLanguage;
+        
+        // Update profile image if available
+        if (userData['photoUrl'] != null && userData['photoUrl'].toString().isNotEmpty) {
+          profileImageUrl = userData['photoUrl'];
+        }
+        
         isLoading = false;
       });
     } catch (e) {

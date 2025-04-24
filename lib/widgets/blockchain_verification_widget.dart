@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dailyhunt/services/blockchain_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dailyhunt/services/firestore_service.dart';
 
 class BlockchainVerificationWidget extends StatefulWidget {
   final String articleContent;
@@ -26,6 +27,7 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
   String _networkName = ""; // Current blockchain network name
   String? _error;
   final BlockchainService _blockchainService = BlockchainService();
+  final FirestoreService _firestoreService = FirestoreService();
   late String _articleId; // Store the article ID for persistence
 
   @override
@@ -60,12 +62,15 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
       final savedVerifierCount = prefs.getInt(verifierCountKey);
       final savedExists = prefs.getBool(existsKey);
 
-      // If we have saved verification status, use that
-      if (savedIsVerified != null && savedExists != null) {
+      // Check if user has verified this article
+      final hasUserVerified = await _firestoreService.isArticleVerifiedByUser(_articleId);
+
+      // If we have saved verification status or user has verified it, use that
+      if ((savedIsVerified != null && savedExists != null) || hasUserVerified) {
         setState(() {
-          _isVerified = savedIsVerified;
-          _verifierCount = savedVerifierCount ?? 0;
-          _exists = savedExists;
+          _isVerified = savedIsVerified ?? hasUserVerified;
+          _verifierCount = savedVerifierCount ?? 1;
+          _exists = savedExists ?? true;
           _isLoading = false;
           _isConnected = true; // Consider connected for UI purposes
           _networkName = "Local"; // Show as locally verified
@@ -225,6 +230,16 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
     });
 
     try {
+      // Record verification in our FirestoreService
+      final success = await _firestoreService.verifyArticle(
+        _articleId,
+        widget.articleContent,
+      );
+
+      if (!success) {
+        throw Exception("Failed to record verification");
+      }
+
       // Update verification status
       setState(() {
         _isLoading = false;
@@ -249,17 +264,6 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
           ),
         );
       }
-
-      // Note: In a real implementation, you would actually call a Firebase function
-      // or other backend service to record the verification. Here's how that might look:
-      //
-      // await FirebaseFirestore.instance.collection('article_verifications').add({
-      //   'articleId': _articleId,
-      //   'articleContent': widget.articleContent,
-      //   'verifiedAt': DateTime.now(),
-      //   'userId': FirebaseAuth.instance.currentUser?.uid ?? 'anonymous',
-      // });
-
     } catch (e) {
       setState(() {
         _isLoading = false;

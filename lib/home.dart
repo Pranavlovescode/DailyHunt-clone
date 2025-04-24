@@ -5,6 +5,7 @@ import 'package:dailyhunt/model/news_model.dart';
 import 'package:dailyhunt/profile_page.dart';
 import 'package:dailyhunt/search_page.dart';
 import 'package:dailyhunt/widgets/blockchain_test_page.dart';
+import 'package:dailyhunt/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -95,7 +96,9 @@ class _HomeState extends State<Home> {
             ),
             child: IconButton(
               icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-              onPressed: () {},
+              onPressed: () {
+                
+              },
             ),
           ),
         ],
@@ -513,11 +516,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FutureBuilder<DocumentSnapshot>(
-                      future: FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(userCredential!.uid)
-                          .get(),
+                    FutureBuilder<Map<String, dynamic>>(
+                      future: FirestoreService().getUserProfile(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const SizedBox(
@@ -527,19 +527,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         }
-                        if (!snapshot.hasData || !snapshot.data!.exists) {
-                          return const Text(
-                            'Welcome back, Guest!',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: "CustomPoppins",
-                              color: Color(0xFF2C3E50),
-                            ),
-                          );
-                        }
-                        final data = snapshot.data!.data() as Map<String, dynamic>?;
-                        final userName = data?['name'] ?? 'Guest';
+                        
+                        // Get user name from FirestoreService results
+                        final userName = snapshot.data?['name'] ?? 'Guest';
+                            
                         return Text(
                           'Welcome back, $userName!',
                           style: const TextStyle(
