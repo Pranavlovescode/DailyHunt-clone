@@ -55,8 +55,7 @@ describe("NewsVerifier", function () {
   });
 
   describe("Article Publishing and Verification", function () {
-    let articleId;
-    const contentHash = "QmT5NvUtoM5nWFM4kGQZe1J1Y1rMqMDHf6sGV3dV9cu8PX"; // Example IPFS hash
+    const contentHash = "0x7465737448617368466f724172746963656c31323334353637383930"; // Example content hash
     const metadataURI = "ipfs://QmT5NvUtoM5nWFM4kGQZe1J1Y1rMqMDHf6sGV3dV9cu8PX/metadata.json";
 
     before(async function () {
@@ -74,48 +73,60 @@ describe("NewsVerifier", function () {
         log => log.fragment && log.fragment.name === 'ArticlePublished'
       );
       
-      // Get articleId from event
-      articleId = event.args.articleId;
+      // Verify the content hash was used in the event
+      expect(event.args.contentHash).to.equal(contentHash);
+      expect(event.args.publisher).to.equal(publisher1.address);
       
-      // Verify article information
-      const article = await newsVerifier.getArticle(articleId);
-      expect(article[0]).to.equal(contentHash);
-      expect(article[2]).to.equal(publisher1.address);
-      expect(article[3]).to.equal(false); // isVerified should be false initially
-      expect(article[5]).to.equal(metadataURI);
+      // Check that article exists using the content hash
+      const article = await newsVerifier.articles(contentHash);
+      expect(article.publisher).to.equal(publisher1.address);
+      expect(article.isVerified).to.equal(false); // isVerified should be false initially
+      expect(article.metadataURI).to.equal(metadataURI);
     });
 
     it("Should allow trusted verifier to verify article", async function () {
-      await newsVerifier.connect(verifier1).verifyArticle(articleId);
+      await newsVerifier.connect(verifier1).verifyArticle(contentHash);
       
-      const article = await newsVerifier.getArticle(articleId);
-      expect(article[3]).to.equal(true); // isVerified should be true now
-      expect(article[4]).to.equal(1);    // verifierCount should be 1
+      const article = await newsVerifier.articles(contentHash);
+      expect(article.isVerified).to.equal(true); // isVerified should be true now
+      expect(article.verifiers.length).to.equal(1); // verifierCount should be 1
     });
 
     it("Should not allow the same verifier to verify the article twice", async function () {
       await expect(
-        newsVerifier.connect(verifier1).verifyArticle(articleId)
+        newsVerifier.connect(verifier1).verifyArticle(contentHash)
       ).to.be.revertedWith("You have already verified this article");
     });
 
     it("Should check article verification status", async function () {
-      const verification = await newsVerifier.checkArticleVerification(articleId);
-      expect(verification[0]).to.equal(true);  // exists
-      expect(verification[1]).to.equal(true);  // isVerified
-      expect(verification[2]).to.equal(1);     // verifierCount
+      const verification = await newsVerifier.checkArticleVerification(contentHash);
+      expect(verification.exists).to.equal(true);
+      expect(verification.isVerified).to.equal(true);
+      expect(verification.verifierCount).to.equal(1);
     });
 
     it("Should fail when non-trusted publisher publishes article", async function () {
       await expect(
-        newsVerifier.connect(publisher2).publishArticle(contentHash, metadataURI)
+        newsVerifier.connect(publisher2).publishArticle(contentHash + "1", metadataURI)
       ).to.be.revertedWith("Only trusted publishers can perform this action");
     });
 
     it("Should fail when non-trusted verifier verifies article", async function () {
       await expect(
-        newsVerifier.connect(verifier2).verifyArticle(articleId)
+        newsVerifier.connect(verifier2).verifyArticle(contentHash)
       ).to.be.revertedWith("Only trusted verifiers can perform this action");
+    });
+    
+    it("Should fail when verifying non-existent article", async function () {
+      await expect(
+        newsVerifier.connect(verifier1).verifyArticle("0x123456789nonexistentarticle")
+      ).to.be.revertedWith("Article does not exist");
+    });
+    
+    it("Should not allow publishing article with same content hash", async function () {
+      await expect(
+        newsVerifier.connect(publisher1).publishArticle(contentHash, metadataURI)
+      ).to.be.revertedWith("Article with this content hash already exists");
     });
   });
 });

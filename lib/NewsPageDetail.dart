@@ -199,13 +199,19 @@ class NewsDetailPage extends StatelessWidget {
                   
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
+                    child: SelectableText(
                       content,
                       style: const TextStyle(
                         fontSize: 16,
                         color: Color(0xFF2C3E50),
                         height: 1.6,
                         fontFamily: "CustomPoppins",
+                      ),
+                      toolbarOptions: const ToolbarOptions(
+                        copy: true,
+                        selectAll: true,
+                        cut: false,
+                        paste: false,
                       ),
                     ),
                   ),

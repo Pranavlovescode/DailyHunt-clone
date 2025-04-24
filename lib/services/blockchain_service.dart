@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:async';
@@ -14,7 +15,7 @@ class BlockchainService {
       'url': 'https://sepolia.infura.io/v3/9ae4419a4d1a4e37820d0b19d9bf74a7', // Replace with your actual Infura key
       'chainId': 11155111, // Sepolia testnet
       'name': 'Sepolia Testnet',
-      'contractAddress': '0x7BC66849c2810a86240B3c725Cc6C9bfbd6F1895' // Add your deployed contract address on Sepolia
+      'contractAddress': '0x7001674FFb5A0d7173a29Cdee4eDEDb676595be1' // Add your deployed contract address on Sepolia
     },
     {
       'url': 'http://127.0.0.1:8545/', // Local Hardhat network URL
@@ -291,118 +292,192 @@ class BlockchainService {
     };
   }
 
-  /// Generates a unique hash for the article content
+  /// Generates a content hash from an article body
   String generateContentHash(String content) {
     final bytes = utf8.encode(content);
     final digest = sha256.convert(bytes);
     return '0x${digest.toString()}';
   }
 
-  /// Publishes an article to the blockchain
-  Future<String?> publishArticle({
+  /// Publish an article to the blockchain
+  Future<Map<String, dynamic>?> publishArticle({
     required String privateKey,
     required String content,
-    required String metadataUri,
+    String? metadataUri = 'news://dailyhunt/article',
   }) async {
-    // Ensure initialization
     if (!isInitialized && !(await ensureInitialized())) {
-      print('BlockchainService initialization failed');
-      return null;
+      print('BlockchainService: not initialized');
+      return {'error': 'Service not initialized'};
     }
-    
+
     if (!_isNodeConnected) {
-      print('Not connected to any blockchain node');
-      return null;
+      print('BlockchainService: not connected to blockchain');
+      return {'error': 'Not connected to blockchain'};
     }
-    
-    // Load contract data if needed
-    if (!isContractLoaded && !(await _loadContractData())) {
-      print('Failed to load contract data');
-      return null;
-    }
-    
+
     try {
+      // Generate content hash from article content
       final contentHash = generateContentHash(content);
-      
+      print('Generated content hash: $contentHash');
+
       // Create credentials from private key
       final credentials = EthPrivateKey.fromHex(privateKey);
       
+      // Use empty string if metadataUri is null
+      final uri = metadataUri ?? 'news://dailyhunt/article';
+
+      print('Publishing article with content hash: $contentHash');
+      print('Using contract at: ${_contractAddress?.hex}');
+      print('Publisher address: ${credentials.address.hex}');
+      print('Metadata URI: $uri');
+
       // Call publishArticle function
       final transaction = Transaction.callContract(
         contract: _contract!,
         function: _publishArticle!,
-        parameters: [contentHash, metadataUri],
-        maxGas: 1000000, // Adjust as needed
+        parameters: [contentHash, uri],
       );
-      
+
       // Send transaction
-      final result = await _web3client!.sendTransaction(
-        credentials, 
+      final txHash = await _web3client!.sendTransaction(
+        credentials,
         transaction,
         chainId: _chainId,
       );
+
+      print('Transaction hash: $txHash');
       
-      // Return transaction hash
-      return result;
+      // Wait for the transaction to be processed
+      TransactionReceipt? receipt;
+      int attempts = 0;
+      const maxAttempts = 10;
+      
+      while (receipt == null && attempts < maxAttempts) {
+        try {
+          receipt = await _web3client!.getTransactionReceipt(txHash);
+        } catch (e) {
+          print('Error getting receipt: $e');
+        }
+        
+        if (receipt == null) {
+          await Future.delayed(const Duration(seconds: 2));
+          attempts++;
+          print('Waiting for receipt... (attempt $attempts/$maxAttempts)');
+        }
+      }
+
+      if (receipt == null) {
+        return {
+          'contentHash': contentHash,
+          'txHash': txHash,
+          'status': 'pending',
+          'message': 'Transaction submitted but not confirmed yet'
+        };
+      }
+
+      return {
+        'contentHash': contentHash,
+        'txHash': txHash,
+        'status': receipt.status! ? 'success' : 'failed',
+        'blockNumber': (receipt.blockNumber?.blockNum ?? 0).toString(),
+      };
     } catch (e) {
-      print('Error publishing article to blockchain: $e');
-      return null;
+      print('Error publishing article: $e');
+      return {'error': e.toString()};
     }
   }
 
-  /// Verifies an article on the blockchain
+  /// Verifies an article on the blockchain using content hash directly
   Future<bool> verifyArticle({
     required String privateKey,
-    required String articleId,
+    required String contentHash,
+    String? content,
   }) async {
-    // Ensure initialization
     if (!isInitialized && !(await ensureInitialized())) {
-      print('BlockchainService initialization failed');
+      print('BlockchainService: not initialized');
       return false;
     }
-    
+
     if (!_isNodeConnected) {
-      print('Not connected to any blockchain node');
+      print('BlockchainService: not connected to blockchain');
       return false;
     }
-    
-    // Load contract data if needed
-    if (!isContractLoaded && !(await _loadContractData())) {
-      print('Failed to load contract data');
-      return false;
-    }
-    
+
     try {
+      // Load contract data if needed
+      if (!isContractLoaded && !(await _loadContractData())) {
+        print('Failed to load contract data');
+        return false;
+      }
+
+      // Format content hash if needed
+      if (contentHash.isEmpty && content != null) {
+        contentHash = generateContentHash(content);
+        print('Generated content hash: $contentHash');
+      }
+
+      String formattedHash = contentHash;
+      if (!formattedHash.startsWith('0x')) {
+        formattedHash = '0x$contentHash';
+      }
+
       // Create credentials from private key
       final credentials = EthPrivateKey.fromHex(privateKey);
       
-      // Convert articleId to bytes32
-      final articleIdBytes = hexToBytes(articleId);
-      
-      // Call verifyArticle function
+      print('Verifying article with content hash: $formattedHash');
+      print('Using contract at: ${_contractAddress?.hex}');
+      print('Verifier address: ${credentials.address.hex}');
+
+      // Call verifyArticle function with the content hash
       final transaction = Transaction.callContract(
         contract: _contract!,
         function: _verifyArticle!,
-        parameters: [articleIdBytes],
-        maxGas: 500000, // Adjust as needed
+        parameters: [formattedHash],
       );
-      
+
       // Send transaction
-      await _web3client!.sendTransaction(
-        credentials, 
+      final txHash = await _web3client!.sendTransaction(
+        credentials,
         transaction,
         chainId: _chainId,
       );
+
+      print('Transaction hash: $txHash');
       
-      return true;
+      // Wait for the transaction to be processed
+      bool confirmed = false;
+      int attempts = 0;
+      const maxAttempts = 10;
+      
+      while (!confirmed && attempts < maxAttempts) {
+        try {
+          final receipt = await _web3client!.getTransactionReceipt(txHash);
+          if (receipt != null) {
+            confirmed = receipt.status!;
+            print('Transaction confirmed: ${receipt.status}');
+            if (!confirmed) {
+              print('Transaction failed: ${receipt.logs}');
+            }
+            break;
+          }
+        } catch (e) {
+          print('Error getting receipt: $e');
+        }
+        
+        await Future.delayed(const Duration(seconds: 2));
+        attempts++;
+        print('Waiting for confirmation... (attempt $attempts/$maxAttempts)');
+      }
+
+      return confirmed;
     } catch (e) {
-      print('Error verifying article on blockchain: $e');
+      print('Error verifying article: $e');
       return false;
     }
   }
 
-  /// Checks if an article exists and is verified
-  Future<Map<String, dynamic>> checkArticleVerification(String articleId) async {
+  /// Checks if an article exists and is verified on the blockchain
+  Future<Map<String, dynamic>> checkArticleVerification(String contentHash) async {
     // Ensure initialization
     if (!isInitialized && !(await ensureInitialized())) {
       print('BlockchainService initialization failed');
@@ -437,31 +512,35 @@ class BlockchainService {
     }
     
     try {
-      // Convert articleId to bytes32
-      final articleIdBytes = hexToBytes(articleId);
+      // Make sure the hash is in the correct format (0x prefixed)
+      String formattedHash = contentHash;
+      if (!formattedHash.startsWith('0x')) {
+        formattedHash = '0x$formattedHash';
+      }
       
-      // Call checkArticleVerification function
+      print('📝 Checking verification for content hash: $formattedHash');
+      print('📝 Using contract at: ${_contractAddress?.hex}');
+      print('📝 Network: $_networkName (Chain ID: $_chainId)');
+      
+      // Call contract with the content hash directly
       final result = await _web3client!.call(
         contract: _contract!,
         function: _checkArticleVerification!,
-        params: [articleIdBytes],
+        params: [formattedHash],
       );
       
-      if (result.isNotEmpty && result.length >= 3) {
-        return {
-          'exists': result[0] as bool,
-          'isVerified': result[1] as bool,
-          'verifierCount': (result[2] as BigInt).toInt(),
-          'networkName': _networkName,
-        };
-      }
+      print('Raw verification result: $result');
       
-      return {
-        'exists': false,
-        'isVerified': false,
-        'verifierCount': 0,
+      final details = {
+        'exists': result[0] as bool,
+        'isVerified': result[1] as bool,
+        'verifierCount': (result[2] as BigInt).toInt(),
         'networkName': _networkName,
+        'contentHash': formattedHash,
       };
+      
+      print('📝 Verification details: $details');
+      return details;
     } catch (e) {
       print('Error checking article verification: $e');
       return {
@@ -474,8 +553,8 @@ class BlockchainService {
     }
   }
 
-  /// Gets article details from the blockchain
-  Future<Map<String, dynamic>?> getArticle(String articleId) async {
+  /// Gets article details from the blockchain by content hash
+  Future<Map<String, dynamic>?> getArticle(String contentHash) async {
     // Ensure initialization
     if (!isInitialized && !(await ensureInitialized())) {
       print('BlockchainService initialization failed');
@@ -497,24 +576,27 @@ class BlockchainService {
     }
     
     try {
-      // Convert articleId to bytes32
-      final articleIdBytes = hexToBytes(articleId);
+      // Format content hash if needed
+      String formattedHash = contentHash;
+      if (!formattedHash.startsWith('0x')) {
+        formattedHash = '0x$contentHash';
+      }
       
       // Call getArticle function
       final result = await _web3client!.call(
         contract: _contract!,
         function: _getArticle!,
-        params: [articleIdBytes],
+        params: [formattedHash],
       );
       
-      if (result.isNotEmpty && result.length >= 6) {
+      if (result.isNotEmpty && result.length >= 5) {
         return {
-          'contentHash': result[0] as String,
-          'timestamp': (result[1] as BigInt).toInt(),
-          'publisher': (result[2] as EthereumAddress).hex,
-          'isVerified': result[3] as bool,
-          'verifierCount': (result[4] as BigInt).toInt(),
-          'metadataURI': result[5] as String,
+          'contentHash': formattedHash,
+          'timestamp': (result[0] as BigInt).toInt(),
+          'publisher': (result[1] as EthereumAddress).hex,
+          'isVerified': result[2] as bool,
+          'verifierCount': (result[3] as BigInt).toInt(),
+          'metadataURI': result[4] as String,
           'networkName': _networkName,
         };
       }
@@ -527,34 +609,6 @@ class BlockchainService {
         'networkName': _networkName,
       };
     }
-  }
-
-  /// Helper function to convert hex to bytes - improved to handle any length properly
-  Uint8List hexToBytes(String hex) {
-    if (hex.startsWith('0x')) {
-      hex = hex.substring(2);
-    }
-    
-    // Check for odd length hex string and pad with leading zero if needed
-    if (hex.length % 2 != 0) {
-      hex = '0' + hex;
-    }
-    
-    final result = <int>[];
-    for (var i = 0; i < hex.length; i += 2) {
-      if (i + 2 <= hex.length) {
-        try {
-          result.add(int.parse(hex.substring(i, i + 2), radix: 16));
-        } catch (e) {
-          print("Error parsing hex value at position $i: ${hex.substring(i, i + 2)}");
-          // Add 0 as a fallback
-          result.add(0);
-        }
-      }
-    }
-    
-    // Convert List<int> to Uint8List
-    return Uint8List.fromList(result);
   }
 
   /// Attempts to reconnect to the blockchain node

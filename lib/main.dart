@@ -1,6 +1,5 @@
 import 'package:dailyhunt/firebase_options.dart';
 import 'package:dailyhunt/home.dart';
-import 'package:dailyhunt/languages.dart';
 import 'package:dailyhunt/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:dailyhunt/login.dart';
@@ -21,8 +20,8 @@ void main() async {
     // Continue app execution even if .env file is missing
   }
   
-  bool isLoggedIn = (await AuthService.isUserLoggedIn()) ?? false;
-  bool showOnboarding = (await shouldShowOnboarding()) ?? true;
+  bool isLoggedIn = await AuthService.isUserLoggedIn();
+  bool showOnboarding = await shouldShowOnboarding();
 
   print("isLoggedIn: $isLoggedIn, showOnboarding: $showOnboarding");
   try {

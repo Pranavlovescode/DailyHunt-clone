@@ -28,20 +28,22 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
   String? _error;
   final BlockchainService _blockchainService = BlockchainService();
   final FirestoreService _firestoreService = FirestoreService();
-  late String _articleId; // Store the article ID for persistence
+  late String _contentHash; // Using content hash directly
 
   @override
   void initState() {
     super.initState();
-    _determineArticleId();
+    _generateContentHash();
     _checkVerification();
   }
 
-  // Determine the article ID for persistence
-  void _determineArticleId() {
-    _articleId = widget.articleId;
-    if (_articleId.isEmpty) {
-      _articleId = _blockchainService.generateContentHash(widget.articleContent);
+  // Generate content hash from article content
+  void _generateContentHash() {
+    // Use provided articleId if it's a hash, otherwise generate from content
+    if (widget.articleId.isNotEmpty && widget.articleId.startsWith('0x')) {
+      _contentHash = widget.articleId;
+    } else {
+      _contentHash = _blockchainService.generateContentHash(widget.articleContent);
     }
   }
 
@@ -54,16 +56,16 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
     try {
       // First check if we have a saved verification status
       final prefs = await SharedPreferences.getInstance();
-      final verificationKey = 'article_verified_${_articleId}';
-      final verifierCountKey = 'article_verifier_count_${_articleId}';
-      final existsKey = 'article_exists_${_articleId}';
+      final verificationKey = 'article_verified_${_contentHash}';
+      final verifierCountKey = 'article_verifier_count_${_contentHash}';
+      final existsKey = 'article_exists_${_contentHash}';
 
       final savedIsVerified = prefs.getBool(verificationKey);
       final savedVerifierCount = prefs.getInt(verifierCountKey);
       final savedExists = prefs.getBool(existsKey);
 
       // Check if user has verified this article
-      final hasUserVerified = await _firestoreService.isArticleVerifiedByUser(_articleId);
+      final hasUserVerified = await _firestoreService.isArticleVerifiedByUser(_contentHash);
 
       // If we have saved verification status or user has verified it, use that
       if ((savedIsVerified != null && savedExists != null) || hasUserVerified) {
@@ -105,7 +107,8 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
       // Service is initialized and connected
       _networkName = _blockchainService.networkName;
 
-      final verification = await _blockchainService.checkArticleVerification(_articleId);
+      // Check verification using content hash directly
+      final verification = await _blockchainService.checkArticleVerification(_contentHash);
 
       setState(() {
         _isLoading = false;
@@ -163,12 +166,12 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Save verification state
-      await prefs.setBool('article_verified_${_articleId}', isVerified);
-      await prefs.setInt('article_verifier_count_${_articleId}', verifierCount);
-      await prefs.setBool('article_exists_${_articleId}', exists);
+      // Save verification state using content hash
+      await prefs.setBool('article_verified_${_contentHash}', isVerified);
+      await prefs.setInt('article_verifier_count_${_contentHash}', verifierCount);
+      await prefs.setBool('article_exists_${_contentHash}', exists);
 
-      print("✅ Saved verification status for article: $_articleId");
+      print("✅ Saved verification status for content hash: $_contentHash");
     } catch (e) {
       print("❌ Failed to save verification status: $e");
     }
@@ -230,9 +233,9 @@ class _BlockchainVerificationWidgetState extends State<BlockchainVerificationWid
     });
 
     try {
-      // Record verification in our FirestoreService
+      // Record verification in our FirestoreService using content hash
       final success = await _firestoreService.verifyArticle(
-        _articleId,
+        _contentHash, // Use content hash instead of article ID
         widget.articleContent,
       );
 

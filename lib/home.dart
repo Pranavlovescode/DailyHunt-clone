@@ -4,7 +4,8 @@ import 'package:dailyhunt/api/news_api.dart';
 import 'package:dailyhunt/model/news_model.dart';
 import 'package:dailyhunt/profile_page.dart';
 import 'package:dailyhunt/search_page.dart';
-import 'package:dailyhunt/widgets/blockchain_test_page.dart';
+
+import 'package:dailyhunt/widgets/hash_verification_page.dart';
 import 'package:dailyhunt/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +70,23 @@ class _HomeState extends State<Home> {
         ),
         automaticallyImplyLeading: false,
         actions: [
+          // Container(
+          //   margin: const EdgeInsets.only(right: 8),
+          //   decoration: BoxDecoration(
+          //     color: Colors.white.withOpacity(0.2),
+          //     borderRadius: BorderRadius.circular(12),
+          //   ),
+          //   child: IconButton(
+          //     icon: const Icon(Icons.search, color: Colors.white),
+          //     tooltip: 'Verify Hash',
+          //     onPressed: () {
+          //       Navigator.push(
+          //         context,
+          //         MaterialPageRoute(builder: (context) => const HashVerificationPage()),
+          //       );
+          //     },
+          //   ),
+          // ),
           // Blockchain Test Button
           Container(
             margin: const EdgeInsets.only(right: 8),
@@ -82,7 +100,7 @@ class _HomeState extends State<Home> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const BlockchainTestPage()),
+                  MaterialPageRoute(builder: (context) => const HashVerificationPage()),
                 );
               },
             ),
